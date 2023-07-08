@@ -21,7 +21,6 @@ s21_decimal s21_abs(s21_decimal value) {
 // performs an addition of value_1 and value_2 and saves into result (returns s21_arithmetic_errors code)
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   s21_arithmetic_errors error = S21_ARITHMETIC_OK;
-
   if (!result) {
     error = S21_ARITHMETIC_INCORRECT_DATA;
   } else if (s21_decimal_correctness(value_1) || s21_decimal_correctness(value_2)) {
@@ -44,14 +43,13 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
 // function performs addition on two positive s21_decimal numbers (returns s21_arithmetic_errors code)
 int s21_add_handle(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   s21_arithmetic_errors error = S21_ARITHMETIC_OK;
-  s21_big_decimal value_1_l;
-  s21_big_decimal value_2_l;
+  s21_big_decimal big_value_1;
+  s21_big_decimal big_value_2;
   int exponent_1 = s21_decimal_get_exponent(value_1);
   int exponent_2 = s21_decimal_get_exponent(value_2);
   int exponent_max = s21_max(exponent_1, exponent_2);
-
   // level the values (both the exponent and sign will be nullified)
-  s21_decimal_levelling(value_1, value_2, &value_1_l, &value_2_l);
+  s21_decimal_levelling(value_1, value_2, &big_value_1, &big_value_2);
   // ...TODO
 }
 
@@ -84,19 +82,15 @@ we store the levelled values in the s21_big_decimal in case of overflow
 
 ...todo
 */
-void s21_decimal_levelling(s21_decimal value_1, s21_decimal value_2, s21_big_decimal *value_1_l, s21_big_decimal *value_2_l) {
+void s21_decimal_levelling(s21_decimal value_1, s21_decimal value_2, s21_big_decimal *big_value_1, s21_big_decimal *big_value_2) {
   int exponent_1 = s21_decimal_get_exponent(value_1);
   int exponent_2 = s21_decimal_get_exponent(value_2);
-
   s21_decimal tmp1 = value_1;
   s21_decimal tmp2 = value_2;
-
   s21_decimal_clear_bit3(&tmp1);
   s21_decimal_clear_bit3(&tmp2);
-
-  // TODO!!!!!!!!!!!!!!!!!!!
   if (exponent_1 > exponent_2) {
-
+    // TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   } else if (exponent_1 < exponent_2) {
 
   } else {

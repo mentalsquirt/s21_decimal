@@ -29,6 +29,6 @@ void s21_decimal_clear_bit3(s21_decimal *decimal) {
 s21_big_decimal s21_decimal_to_big_decimal(s21_decimal decimal) {
   s21_big_decimal result;
   result.decimals[0] = decimal;
-  result.decimals[1] = s21_big_decimal_get_zero();
+  result.decimals[1] = s21_decimal_get_zero();
   return result;
 }

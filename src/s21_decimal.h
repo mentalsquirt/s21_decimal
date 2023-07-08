@@ -1,9 +1,9 @@
 #ifndef SRC_S21_DECIMAL_H_
 #define SRC_S21_DECIMAL_H_
 
-#include <assert.h>
+//#include <assert.h>
 #include <stdlib.h>
-#include <math.h>
+//#include <math.h>
 
 #define DECIMAL_SIZE 4
 #define MAX_BITS 128
@@ -30,6 +30,7 @@ typedef struct {
   unsigned int bits[DECIMAL_SIZE];
 } s21_decimal;
 
+// 256 bits struct
 typedef struct {
   s21_decimal decimals[2];
 } s21_big_decimal;
@@ -68,6 +69,13 @@ s21_decimal s21_decimal_set_bit(s21_decimal decimal, int index);
 int s21_unset_bit(unsigned int value, int index);
 int s21_invert_bit(unsigned int value, int index);
 int s21_decimal_get_non_zero_bit(s21_decimal decimal);
+/* BINARY SHIFTS */
+s21_decimal s21_decimal_binary_shift_left_one(s21_decimal decimal);
+s21_decimal s21_decimal_binary_shift_left(s21_decimal decimal, int shift);
+s21_decimal s21_decimal_binary_shift_right_one(s21_decimal decimal);
+s21_decimal s21_decimal_binary_shift_right(s21_decimal decimal, int shift);
+s21_big_decimal s21_big_decimal_binary_shift_left(s21_big_decimal decimal, int shift);
+s21_big_decimal s21_big_decimal_binary_shift_right(s21_big_decimal decimal, int shift);
 /* BINARY LOGIC */
 s21_decimal s21_decimal_binary_and(s21_decimal value_1, s21_decimal value_2);
 s21_decimal s21_decimal_binary_not(s21_decimal value_1);
@@ -77,6 +85,10 @@ int s21_decimal_binary_is_zero(s21_decimal decimal);
 int s21_decimal_binary_compare(s21_decimal value_1, s21_decimal value_2);
 /* BINARY ADDITION */
 s21_decimal s21_decimal_binary_addition(s21_decimal value_1, s21_decimal value_2);
+s21_big_decimal s21_big_decimal_binary_addition(s21_big_decimal value_1, s21_big_decimal value_2);
+/* BINARY MULTIPLICATION */
+s21_big_decimal s21_decimal_binary_multiplication(s21_decimal value_1, s21_decimal value_2);
+s21_big_decimal s21_big_decimal_binary_multiplication(s21_big_decimal big_value_1, s21_decimal value_2);
 
 
 // utility functions operating on bits[3]
@@ -110,7 +122,7 @@ int s21_is_not_equal(s21_decimal, s21_decimal);
 
 
 // converters
-int s21_from_int_to_decimal(int src, s21_decimal *dst);
+int s21_from_int_to_decimal(int src, s21_decimal *dst); // NEEDED FOR ARITHMETIC ADDITION (and levelling)
 int s21_from_float_to_decimal(float src, s21_decimal *dst);
 int s21_from_decimal_to_int(s21_decimal src, int *dst);
 int s21_from_decimal_to_float(s21_decimal src, float *dst);
