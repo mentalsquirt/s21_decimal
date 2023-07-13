@@ -40,12 +40,20 @@ int s21_decimal_get_exponent(s21_decimal decimal) {
   return bit3.layout.exponent;
 }
 
+// sets the exponent to the desired value
 void s21_decimal_set_exponent(s21_decimal *decimal, int exponent) {
   s21_decimal_bit3 bit3;
   bit3.i = decimal->bits[3];
   bit3.layout.exponent = exponent;
 
   decimal->bits[3] = bit3.i;
+}
+
+// returns the sign of a s21_decimal number
+int s21_decimal_get_sign(s21_decimal decimal) {
+  s21_decimal_bit3 bit3;
+  bit3.i = decimal.bits[3];
+  return bit3.layout.sign;
 }
 
 // sets a desired sign to the s21_decimal number provided

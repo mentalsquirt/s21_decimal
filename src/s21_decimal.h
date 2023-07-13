@@ -3,6 +3,7 @@
 
 //#include <assert.h>
 #include <stdlib.h>
+#include <limits.h>
 //#include <math.h>
 
 #define DECIMAL_SIZE 4
@@ -19,7 +20,7 @@ bits[0], bits[1], bits[2] contain the low, middle and high 32 bits
 of the 96-bit integer number accordingly
 
 bits[3] contains the scale factor and sign, using layout as follows:
-- 0-15 unused and must be zero
+- 0-15 unused and must be zero (low bits)
 - 16-23 contain an exponent between 0 and 28 (indicates the power of 10 to divide the integer number)
 - 24-30 unused and must be zero
 - 31 sign (0 is positive and 1 is negative)
@@ -37,7 +38,7 @@ typedef struct {
 
 // union for making it easier to access bits[3]
 typedef union {
-  int i;  // WHY??????????
+  int i;
   struct {  /* ':' is bit layout */
     uint32_t low_empty : 16;
     uint32_t exponent : 8;
@@ -52,6 +53,15 @@ typedef enum {
   S21_NEGATIVE = 1
 } s21_decimal_sign;
 
+// enum that eliminates the need to use <stdbool.h>
+typedef enum {
+  S21_TRUE = 1,
+  S21_FALSE = 0
+} s21_bool;
+
+/*
+  ERROR AND RESULT ENUMS
+*/
 typedef enum {
   S21_ARITHMETIC_OK = 0,
   S21_ARITHMETIC_BIG = 1,
@@ -59,6 +69,21 @@ typedef enum {
   S21_ARITHMETIC_ZERO_DIV = 3,
   S21_ARITHMETIC_INCORRECT_DATA = 4
 } s21_arithmetic_errors;
+
+typedef enum {
+  S21_FALSE = 0,
+  S21_TRUE = 1
+} s21_comparison_res;
+
+typedef enum {
+  S21_CONVERSION_OK = 0,
+  S21_CONVERSION_ERROR = 1
+} s21_conversion_errors;
+
+typedef enum {
+  S21_OTHER_OK = 0,
+  S21_OTHER_ERROR = 1
+} s21_other_errors;
 
 
 // binary operations
@@ -89,6 +114,11 @@ s21_big_decimal s21_big_decimal_binary_addition(s21_big_decimal value_1, s21_big
 /* BINARY MULTIPLICATION */
 s21_big_decimal s21_decimal_binary_multiplication(s21_decimal value_1, s21_decimal value_2);
 s21_big_decimal s21_big_decimal_binary_multiplication(s21_big_decimal big_value_1, s21_decimal value_2);
+/* BINARY SUBTRACTION */
+s21_decimal s21_decimal_binary_subtraction(s21_decimal value_1, s21_decimal value_2);
+s21_big_decimal s21_big_decimal_binary_subtraction(s21_big_decimal value_1, s21_big_decimal value_2);
+/* BINARY DIVISION */
+s21_decimal s21_decimal_binary_division(s21_decimal dividend, s21_decimal divisor, s21_decimal *remainder);
 
 
 // utility functions operating on bits[3]
@@ -97,6 +127,7 @@ int s21_decimal_low_empty_check(s21_decimal decimal);
 int s21_decimal_high_empty_check(s21_decimal decimal);
 int s21_decimal_get_exponent(s21_decimal decimal);
 void s21_decimal_set_exponent(s21_decimal *decimal, int exponent);
+int s21_decimal_get_sign(s21_decimal decimal);
 void s21_decimal_set_sign(s21_decimal *decimal, int sign);
 
 
@@ -134,5 +165,10 @@ void s21_clear_decimal(s21_decimal *decimal);
 s21_decimal s21_decimal_get_zero(void);
 void s21_decimal_clear_bit3(s21_decimal *decimal);
 s21_big_decimal s21_decimal_to_big_decimal(s21_decimal decimal);
+
+
+// other (rounding, negate etc.)
+int s21_round(s21_decimal value, s21_decimal *result);
+int s21_bamk_round(s21_decimal value, s21_decimal *result);
 
 #endif  // SRC_S21_DECIMAL_H_
