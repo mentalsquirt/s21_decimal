@@ -2,6 +2,10 @@
 
 /*
   **BINARY OPERATIONS**
+
+  these functions interpret s21_decimals as uint128 and
+  s21_big_decimals as uint256
+  hence — only positive values should be used with those
 */
 
 
@@ -57,6 +61,7 @@ int s21_invert_bit(unsigned int value, int index) {
 
 /*
   returns an index of the first occurance of a non-zero bit starting from the highest
+  if there are no non-zero bits, returns -1
 */
 int s21_decimal_get_non_zero_bit(s21_decimal decimal) {
   int res = -1;
@@ -371,7 +376,7 @@ s21_decimal s21_decimal_binary_division(s21_decimal dividend, s21_decimal diviso
   s21_decimal res;
   s21_decimal partial_remainder = s21_decimal_get_zero();
   s21_decimal quotient = s21_decimal_get_zero();
-  if (s21_decimal_is_zero(dividend)) {
+  if (s21_decimal_binary_is_zero(dividend)) {
     quotient = s21_decimal_get_zero();
     partial_remainder = s21_decimal_get_zero();
   } else if (s21_decimal_binary_compare(dividend, divisor) == -1) {
@@ -383,9 +388,9 @@ s21_decimal s21_decimal_binary_division(s21_decimal dividend, s21_decimal diviso
     int shift = non_zero_dividend - non_zero_divisor;
     s21_decimal shifted_divisor = s21_decimal_binary_shift_left(divisor, shift);
     s21_decimal dividend_tmp = dividend;
-    s21_bool need_subtraction = S21_TRUE;
+    s21_bool subtraction = S21_TRUE;
     while (shift >= 0) {
-      if (need_subtraction) {
+      if (subtraction) {
         partial_remainder = s21_decimal_binary_subtraction(dividend_tmp, shifted_divisor);
       } else {
         partial_remainder = s21_decimal_binary_addition(dividend_tmp, shifted_divisor);
@@ -396,9 +401,9 @@ s21_decimal s21_decimal_binary_division(s21_decimal dividend, s21_decimal diviso
       }
       dividend_tmp = s21_decimal_binary_shift_left_one(partial_remainder);
       if (!s21_decimal_test_bit(partial_remainder, MAX_BITS - 1)) {
-        need_subtraction = 1;
+        subtraction = 1;
       } else {
-        need_subtraction = 0;
+        subtraction = 0;
       }
       --shift;
     }
@@ -406,6 +411,69 @@ s21_decimal s21_decimal_binary_division(s21_decimal dividend, s21_decimal diviso
       partial_remainder = s21_decimal_binary_addition(partial_remainder, shifted_divisor);
     }
     partial_remainder = s21_decimal_binary_shift_right(partial_remainder, non_zero_dividend - non_zero_divisor);
+  }
+  res = quotient;
+  if (remainder != NULL) {
+    *remainder = partial_remainder;
+  }
+  return res;
+}
+
+/* 
+  performs binary division of two uint256 using bitwise operations
+  returns s21_big_decimal (uint256) - quotient of the two s21_big_decimal parameters
+  (if you don't need a remainder — pass NULL as the third arg)
+*/
+s21_big_decimal s21_big_decimal_binary_division(s21_big_decimal dividend, s21_big_decimal divisor, s21_big_decimal *remainder) {
+  s21_big_decimal res;
+  s21_big_decimal partial_remainder = s21_decimal_to_big_decimal(s21_decimal_get_zero());
+  s21_big_decimal quotient = s21_decimal_to_big_decimal(s21_decimal_get_zero());
+  if (s21_decimal_binary_is_zero(dividend.decimals[0]) &&
+      s21_decimal_binary_is_zero(divisor.decimals[1])) {
+    quotient = s21_decimal_to_big_decimal(s21_decimal_get_zero());
+    partial_remainder = s21_decimal_to_big_decimal(s21_decimal_get_zero());
+  } else if (s21_big_decimal_binary_compare(dividend, divisor) == -1) {
+    quotient = s21_decimal_to_big_decimal(s21_decimal_get_zero());
+    partial_remainder = dividend;
+  } else {
+    int non_zero_dividend = s21_decimal_get_non_zero_bit(dividend.decimals[1]);
+    if (non_zero_dividend == -1) {
+      non_zero_dividend = s21_decimal_get_non_zero_bit(dividend.decimals[0]);
+    } else {
+      non_zero_dividend = MAX_BITS + non_zero_dividend;
+    }
+    int non_zero_divisor = s21_decimal_get_non_zero_bit(divisor.decimals[1]);
+    if (non_zero_divisor == -1) {
+      non_zero_divisor = s21_decimal_get_non_zero_bit(divisor.decimals[0]);
+    } else {
+      non_zero_divisor = MAX_BITS + non_zero_divisor;
+    }
+    int shift = non_zero_dividend - non_zero_divisor;
+    s21_big_decimal shifted_divisor = s21_big_decimal_binary_shift_left(divisor, shift);
+    s21_big_decimal dividend_tmp = dividend;
+    s21_bool subtraction = S21_TRUE;
+    while (shift >= 0) {
+      if (subtraction) {
+        partial_remainder = s21_big_decimal_binary_subtraction(dividend_tmp, shifted_divisor);
+      } else {
+        partial_remainder = s21_big_decimal_binary_addition(dividend_tmp, shifted_divisor);
+      }
+      quotient = s21_big_decimal_binary_shift_left(quotient, 1);
+      if (!s21_big_decimal_test_bit(partial_remainder.decimals[1], MAX_BITS - 1)) {
+        quotient.decimals[0] = s21_decimal_set_bit(quotient.decimals[0], 0);
+      }
+      dividend_tmp = s21_big_decimal_binary_shift_left(partial_remainder, 1);
+      if (!s21_decimal_test_bit(partial_remainder.decimals[1], MAX_BITS - 1)) {
+        subtraction = 1;
+      } else {
+        subtraction = 0;
+      }
+      --shift;
+    }
+    if (s21_decimal_test_bit(partial_remainder.decimals[1], MAX_BITS - 1)) {
+      partial_remainder = s21_big_decimal_binary_addition(partial_remainder, shifted_divisor);
+    }
+    partial_remainder = s21_big_decimal_binary_shift_right(partial_remainder, non_zero_dividend - non_zero_divisor);
   }
   res = quotient;
   if (remainder != NULL) {
