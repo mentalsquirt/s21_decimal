@@ -68,6 +68,7 @@ HELPERS
 
 /*
   function performs addition on two positive s21_decimal numbers
+  writes into *result
   returns s21_arithmetic_errors code
 */
 int s21_add_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
@@ -99,8 +100,16 @@ int s21_add_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result
     // make the result fit into 96 bits of mantissa
     big_res = s21_big_decimal_binary_division(big_res, big_power_of_ten, &remainder);
     s21_decimal_set_exponent(&remainder.decimals[0], shift);
-    // BANKING ROUNDING TODO!!!!!!!!
+    big_res.decimals[0] = s21_bank_round(big_res.decimals[0], remainder.decimals[0]);
+    s21_decimal_set_exponent(&big_res.decimals[0], res_exponent);
+    if (!s21_decimal_binary_is_zero(big_res.decimals[1]) || !s21_decimal_correctness(big_res.decimals[0])) {
+      error = S21_ARITHMETIC_BIG;
+      *result = s21_decimal_get_inf();
+    } else {
+      *result = big_res.decimals[0];
+    }
   }
+  return error;
 }
 
 /*

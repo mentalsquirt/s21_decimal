@@ -25,16 +25,35 @@ int s21_round(s21_decimal value, s21_decimal *result) {
     *result = s21_decimal_get_zero();
     int sign = s21_decimal_get_sign(value);
     s21_decimal fraction;
-    s21_decimal value_cleaned;
-    s21_decimal value_unsigned = s21_abs(value);
-    s21_truncate(value_unsigned, &value_cleaned);
-    // s21_sub(value_unsigned, value_cleaned, &fraction);
+    s21_decimal u_value = s21_abs(value);
+    s21_decimal u_value_truncated;
+    s21_truncate(u_value, &u_value_truncated);
+    // s21_sub(u_value, u_value_truncated, &fraction);
   }
 }
 
-// {{0x5, 0x0, 0x0, 0x10000}} is 0.5 in decimal
-int s21_bank_round(s21_decimal value, s21_decimal *result) {
-  return 0;  // TODO!!!!!!!!
+/*
+  banking rounding
+  the integral and fractional parts of a number are accepted separately
+  overflow is not controlled
+  returns new rounded s21_decimal
+*/
+s21_decimal s21_bank_round(s21_decimal integral, s21_decimal fraction) {
+  s21_decimal point_five = {{0x5, 0x0, 0x0, 0x10000}};
+  s21_decimal one = {{0x1, 0x0, 0x0, 0x0}};
+  s21_decimal res;
+  if (s21_is_equal(fraction, point_five)) {
+    if (s21_decimal_is_even(integral)) {
+      res = integral;
+    } else {
+      res = s21_decimal_binary_addition(integral, one);
+    }
+  } else if (s21_is_greater(fraction, point_five)) {
+    res = s21_decimal_binary_addition(integral, one);
+  } else {
+    res = integral;
+  }
+  return res;
 }
 
 /*
@@ -89,6 +108,21 @@ int s21_truncate(s21_decimal value, s21_decimal *result) {
     *result = tmp;
     if (s21_decimal_get_sign(value) == S21_NEGATIVE) {
       s21_decimal_set_sign(result, S21_NEGATIVE);
+    }
+  }
+  return error;
+}
+
+int s21_negate(s21_decimal value, s21_decimal *result) {
+  s21_other_errors error = S21_OTHER_OK;
+  if (!result) {
+    error = S21_OTHER_ERROR;
+  } else {
+    *result = value;
+    s21_decimal_set_sign(result, !s21_decimal_get_sign(*result));
+    // if the decimal is incorrect, we set the error variable, but still change the sign
+    if (!s21_decimal_correctness(value)) {
+      error = S21_OTHER_ERROR;
     }
   }
   return error;

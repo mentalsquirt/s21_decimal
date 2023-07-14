@@ -68,3 +68,11 @@ void s21_decimal_set_sign(s21_decimal *decimal, int sign) {
 
   decimal->bits[3] = bit3.i;
 }
+
+/*
+  checks if the s21_decimal value is even
+  returns 1 if even, 0 if odd
+*/
+int s21_decimal_is_even(s21_decimal value) {
+  return (value.bits[0] & 1) != 1;
+}

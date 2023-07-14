@@ -123,7 +123,7 @@ s21_decimal s21_decimal_binary_division(s21_decimal dividend, s21_decimal diviso
 s21_big_decimal s21_big_decimal_binary_division(s21_big_decimal dividend, s21_big_decimal divisor, s21_big_decimal *remainder);
 
 
-// utility functions operating on bits[3]
+// utility functions (mostly) operating on bits[3]
 int s21_decimal_correctness(s21_decimal decimal);
 int s21_decimal_low_empty_check(s21_decimal decimal);
 int s21_decimal_high_empty_check(s21_decimal decimal);
@@ -131,6 +131,7 @@ int s21_decimal_get_exponent(s21_decimal decimal);
 void s21_decimal_set_exponent(s21_decimal *decimal, int exponent);
 int s21_decimal_get_sign(s21_decimal decimal);
 void s21_decimal_set_sign(s21_decimal *decimal, int sign);
+int s21_decimal_is_even(s21_decimal value);
 
 
 // arithmetic
@@ -158,7 +159,7 @@ int s21_is_less_helper(s21_decimal value_1, s21_decimal value_2);
 
 
 // converters
-int s21_from_int_to_decimal(int src, s21_decimal *dst); // NEEDED FOR ARITHMETIC ADDITION (and levelling)
+int s21_from_int_to_decimal(int src, s21_decimal *dst);
 int s21_from_float_to_decimal(float src, s21_decimal *dst);
 int s21_from_decimal_to_int(s21_decimal src, int *dst);
 int s21_from_decimal_to_float(s21_decimal src, float *dst);
@@ -175,9 +176,10 @@ s21_big_decimal s21_decimal_to_big_decimal(s21_decimal decimal);
 
 // other (rounding, negate etc.)
 int s21_round(s21_decimal value, s21_decimal *result);
-int s21_bank_round(s21_decimal value, s21_decimal *result);
+s21_decimal s21_bank_round(s21_decimal integral, s21_decimal fraction);
 s21_decimal s21_decimal_remove_trailing_zeros(s21_decimal value);
 int s21_truncate(s21_decimal value, s21_decimal *result);
+int s21_negate(s21_decimal value, s21_decimal *result);
 
 
 #endif  // SRC_S21_DECIMAL_H_

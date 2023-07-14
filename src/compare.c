@@ -9,6 +9,7 @@
     S21_TRUE = 1
 */
 
+
 /*
   checks if value_1 is less than value_2
   returns an s21_comparison_res code:
