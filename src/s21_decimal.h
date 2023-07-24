@@ -142,6 +142,7 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 /* helpers */
 int s21_add_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
+int s21_mul_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); // RECHECK THIS ONE LATER!!!!!!!!!
 int s21_max(int a, int b);
 int s21_big_decimal_shift_to_decimal(s21_big_decimal value);
 void s21_decimal_levelling(s21_decimal value_1, s21_decimal value_2, s21_big_decimal *value_1_l, s21_big_decimal *value_2_l);

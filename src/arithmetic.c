@@ -30,21 +30,34 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   s21_arithmetic_errors error = S21_ARITHMETIC_OK;
   if (!result) {
     error = S21_ARITHMETIC_INCORRECT_DATA;
-  } else if (s21_decimal_correctness(value_1) || s21_decimal_correctness(value_2)) {
+  } else if (!s21_decimal_correctness(value_1) || !s21_decimal_correctness(value_2)) {
     error = S21_ARITHMETIC_INCORRECT_DATA;
     *result = s21_decimal_get_inf();
   } else {
     // all of the tests are passed
     *result = s21_decimal_get_zero();
     s21_decimal res = s21_decimal_get_zero();
-
-    int sign1 = s21_decimal_get_sign(value_1);
-    int sign2 = s21_decimal_get_sign(value_2);
-
-    if(sign1 == S21_POSITIVE && sign2 == S21_POSITIVE) {
-      // handle addition
+    int sign_1 = s21_decimal_get_sign(value_1);
+    int sign_2 = s21_decimal_get_sign(value_2);
+    if (sign_1 == S21_POSITIVE && sign_2 == S21_POSITIVE) {
+      error = s21_add_helper(value_1, value_2, &res);
+    } else if (sign_1 == S21_POSITIVE && sign_2 == S21_NEGATIVE) {
+      // TODO: s21_sub required for s21_add to work properly
+      error = s21_sub(value_1, s21_abs(value_2), &res);
+    } else if (sign_1 == S21_NEGATIVE && sign_2 == S21_POSITIVE) {
+      // TODO: s21_sub required for s21_add to work properly
+      error = s21_sub(s21_abs(value_1), value_2, &res);
+      s21_negate(res, &res);
+    } else if (sign_1 == S21_NEGATIVE && sign_2 == S21_NEGATIVE) {
+      error = s21_add_helper(s21_abs(value_1), s21_abs(value_2), &res);
+      s21_negate(res, &res);
     }
+    if (s21_decimal_get_sign(res) == S21_NEGATIVE && error == S21_ARITHMETIC_BIG) {
+      error = S21_ARITHMETIC_SMALL;
+    }
+    *result = res;
   }
+  return error;
 }
 
 //TODO
@@ -52,9 +65,46 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   return 0;
 }
 
-//TODO
+/*
+  performs multiplication of value_1 and value_2 and saves into result
+  returns s21_arithmetic_errors code
+*/
 int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-  return 0;
+  s21_arithmetic_errors error = S21_ARITHMETIC_OK;
+  if (!result) {
+    error = S21_ARITHMETIC_INCORRECT_DATA;
+  } else if (!s21_decimal_correctness(value_1) || !s21_decimal_correctness(value_2)) {
+    error = S21_ARITHMETIC_INCORRECT_DATA;
+    *result = s21_decimal_get_inf();
+  } else {
+    // all of the tests are passed
+    *result = s21_decimal_get_zero();
+    s21_decimal res = s21_decimal_get_zero();
+    int sign_1 = s21_decimal_get_sign(value_1);
+    int sign_2 = s21_decimal_get_sign(value_2);
+    if (sign_1 == S21_POSITIVE && sign_2 == S21_POSITIVE) {
+      error = s21_mul_helper(value_1, value_2, &res);
+    } else if (sign_1 == S21_POSITIVE && sign_2 == S21_NEGATIVE) {
+      error = s21_mul_helper(value_1, s21_abs(value_2), &res);
+      s21_negate(res, &res);
+    } else if (sign_1 == S21_NEGATIVE && sign_2 == S21_POSITIVE) {
+      error = s21_mul_helper(s21_abs(value_1), value_2, &res);
+      s21_negate(res, &res);
+    } else if (sign_1 == S21_NEGATIVE && sign_2 == S21_NEGATIVE) {
+      error = s21_mul_helper(s21_abs(value_1), s21_abs(value_2), &res);
+    }
+    if (error == S21_ARITHMETIC_BIG) {
+      if (s21_decimal_get_sign(res) == S21_NEGATIVE) {
+        error = S21_ARITHMETIC_SMALL;
+      }
+    }
+    if (error == S21_ARITHMETIC_OK && s21_is_not_equal(value_1, s21_decimal_get_zero()) &&
+        s21_is_not_equal(value_2, s21_decimal_get_zero()) && s21_is_equal(res, s21_decimal_get_zero())) {
+      error = S21_ARITHMETIC_SMALL;
+    }
+    *result = res;
+  }
+  return error;
 }
 
 //TODO
@@ -113,6 +163,58 @@ int s21_add_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result
 }
 
 /*
+  function performs multiplication on two positive s21_decimal numbers
+  writes into *result
+  returns s21_arithmetic_errors code
+*/
+int s21_mul_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+  s21_arithmetic_errors error = S21_ARITHMETIC_OK;
+  int exponent_1 = s21_decimal_get_exponent(value_1);
+  int exponent_2 = s21_decimal_get_exponent(value_2);
+  s21_decimal_clear_bit3(&value_1);
+  s21_decimal_clear_bit3(&value_2);
+  s21_big_decimal res = s21_decimal_binary_multiplication(value_1, value_2);
+  int shift = s21_big_decimal_shift_to_decimal(res);
+  int exponent_res = exponent_1 + exponent_2 - shift;
+  if (exponent_res < 0) {
+    error = S21_ARITHMETIC_BIG;
+    *result = s21_decimal_get_inf();
+  } else {
+    s21_decimal ten = s21_decimal_get_zero();
+    s21_from_int_to_decimal(10, &ten);
+    while (shift > 28) {
+      res = s21_big_decimal_binary_division(res, s21_decimal_to_big_decimal(ten), NULL);
+      --shift;
+    }
+    if (exponent_res > 28) {
+      s21_big_decimal tmp = res;
+      int exponent_tmp = exponent_res;
+      while (exponent_tmp > 28) {
+        tmp = s21_big_decimal_binary_division(tmp, s21_decimal_to_big_decimal(ten), NULL);
+        --exponent_tmp;
+      }
+      shift = exponent_res - exponent_tmp + shift;
+      exponent_res = exponent_tmp;
+    }
+    s21_big_decimal remainder = s21_decimal_to_big_decimal(s21_decimal_get_zero());
+    s21_decimal power_of_ten_tmp = s21_decimal_get_zero();
+    s21_from_int_to_decimal(pow(10., (double)shift), &power_of_ten_tmp);
+    s21_big_decimal power_of_ten = s21_decimal_to_big_decimal(power_of_ten_tmp);
+    res = s21_big_decimal_binary_division(res, power_of_ten, &remainder);
+    s21_decimal_set_exponent(&remainder.decimals[0], shift);
+    res.decimals[0] = s21_bank_round(res.decimals[0], remainder.decimals[0]);
+    s21_decimal_set_exponent(&res.decimals[0], exponent_res);
+    if (!s21_decimal_binary_equal_zero(res.decimals[1]) || !s21_decimal_correctness(res.decimals[0])) {
+      error = S21_ARITHMETIC_BIG;
+      *result = s21_decimal_get_inf();
+    } else {
+      *result = res.decimals[0];
+    }
+  }
+  return error;
+}
+
+/*
   returns max of two integers
 */
 int s21_max(int value_1, int value_2) {
@@ -130,7 +232,7 @@ int s21_big_decimal_shift_to_decimal(s21_big_decimal value) {
         s21_decimal_binary_is_zero(value.decimals[1]))) {
     s21_big_decimal max = s21_decimal_to_big_decimal(s21_decimal_get_max());
     s21_big_decimal quotient = s21_big_decimal_binary_division(value, max, NULL);
-    while (1) {
+    while (S21_TRUE) {
       s21_decimal power_of_ten = s21_decimal_get_zero();
       s21_from_int_to_decimal(pow(10., res), &power_of_ten);
       int compare_res = s21_decimal_binary_compare(quotient.decimals[0], power_of_ten);
@@ -150,10 +252,10 @@ int s21_big_decimal_shift_to_decimal(s21_big_decimal value) {
 }
 
 /*
-levelled values are only the integral part of the decimal, hence if exponents
-differ — we may get a lot of trailing zeros
+  levelled values are only the integral part of the decimal, hence if exponents
+  differ significantly — we may get a lot of trailing zeros
 
-we store the levelled values in the uint256 in case of overflow
+  we store the levelled values in the uint256 in case of overflow
 */
 void s21_decimal_levelling(s21_decimal value_1, s21_decimal value_2, s21_big_decimal *big_value_1, s21_big_decimal *big_value_2) {
   int exponent_1 = s21_decimal_get_exponent(value_1);
