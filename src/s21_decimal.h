@@ -54,12 +54,6 @@ typedef enum {
   S21_NEGATIVE = 1
 } s21_decimal_sign;
 
-// enum that eliminates the need to use <stdbool.h>
-typedef enum {
-  S21_FALSE = 0,
-  S21_TRUE = 1
-} s21_bool;
-
 /*
   ERROR AND RESULT ENUMS
 */
