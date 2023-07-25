@@ -130,7 +130,9 @@ int s21_add_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result
   int exponent_max = s21_max(exponent_1, exponent_2);
   // level the values (both the exponent and sign will be nullified)
   s21_decimal_levelling(value_1, value_2, &big_value_1, &big_value_2);
+  // add the values as two humongous integral numbers
   s21_big_decimal big_res = s21_big_decimal_binary_addition(big_value_1, big_value_2);
+  // figure out how to shift the decimal point to fit the result into 96 bits of mantissa
   int shift = s21_big_decimal_shift_to_decimal(big_res);
   int res_exponent = exponent_max - shift;
   if (res_exponent < 0) {

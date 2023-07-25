@@ -17,14 +17,14 @@
 #define is_inf(x) __builtin_isinf(x)
 
 /*
-bits[0], bits[1], bits[2] contain the low, middle and high 32 bits 
-of the 96-bit integer number accordingly
+  bits[0], bits[1], bits[2] contain the low, middle and high 32 bits 
+  of the 96-bit integer number accordingly
 
-bits[3] contains the scale factor and sign, using layout as follows:
-- 0-15 unused and must be zero (low bits)
-- 16-23 contain an exponent between 0 and 28 (indicates the power of 10 to divide the integer number)
-- 24-30 unused and must be zero
-- 31 sign (0 is positive and 1 is negative)
+  bits[3] contains the scale factor and sign, using layout as follows:
+  - 0-15 unused and must be zero (low bits)
+  - 16-23 contain an exponent between 0 and 28 (indicates the power of 10 to divide the integer number)
+  - 24-30 unused and must be zero
+  - 31 sign (0 is positive and 1 is negative)
 */
 
 // main struct of the s21_decimal type
@@ -39,7 +39,7 @@ typedef struct {
 
 // union for making it easier to access bits[3]
 typedef union {
-  int i;
+  int i;  // 32 bits
   struct {  /* ':' is bit layout */
     uint32_t low_empty : 16;
     uint32_t exponent : 8;
@@ -137,7 +137,7 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 /* helpers */
 int s21_add_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
-int s21_mul_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); // RECHECK THIS ONE LATER!!!!!!!!!
+int s21_mul_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int s21_max(int a, int b);
 int s21_big_decimal_shift_to_decimal(s21_big_decimal value);
 void s21_decimal_levelling(s21_decimal value_1, s21_decimal value_2, s21_big_decimal *value_1_l, s21_big_decimal *value_2_l);

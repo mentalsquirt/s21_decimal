@@ -87,6 +87,7 @@ s21_decimal s21_decimal_binary_shift_left_one(s21_decimal decimal) {
   for (size_t i = 0; i < DECIMAL_SIZE; ++i) {
     res.bits[i] = decimal.bits[i] << 1;
   }
+  // check if we need to set the lowest bit in each "bits" int
   for (size_t i = 0; i < DECIMAL_SIZE - 1; ++i) {
     int highest = s21_test_bit(decimal.bits[i], MAX_BITS_INT - 1);
     if (highest) res.bits[i + 1] = s21_set_bit(res.bits[i + 1], 0);
@@ -114,6 +115,7 @@ s21_decimal s21_decimal_binary_shift_right_one(s21_decimal decimal) {
   for (size_t i = 0; i < DECIMAL_SIZE; ++i) {
     res.bits[i] = decimal.bits[i] >> 1;
   }
+  // check if we need to set the highest bit in each "bits" int
   for (size_t i = 3; i > 0; --i) {
     int lowest = s21_test_bit(decimal.bits[i], 0);
     if (lowest) res.bits[i - 1] = s21_set_bit(res.bits[i - 1], MAX_BITS_INT - 1);
@@ -388,7 +390,7 @@ s21_decimal s21_decimal_binary_division(s21_decimal dividend, s21_decimal diviso
     int shift = non_zero_dividend - non_zero_divisor;
     s21_decimal shifted_divisor = s21_decimal_binary_shift_left(divisor, shift);
     s21_decimal dividend_tmp = dividend;
-    s21_bool subtraction = S21_TRUE;
+    s21_comparison_res subtraction = S21_TRUE;
     while (shift >= 0) {
       if (subtraction) {
         partial_remainder = s21_decimal_binary_subtraction(dividend_tmp, shifted_divisor);
@@ -451,7 +453,7 @@ s21_big_decimal s21_big_decimal_binary_division(s21_big_decimal dividend, s21_bi
     int shift = non_zero_dividend - non_zero_divisor;
     s21_big_decimal shifted_divisor = s21_big_decimal_binary_shift_left(divisor, shift);
     s21_big_decimal dividend_tmp = dividend;
-    s21_bool subtraction = S21_TRUE;
+    s21_comparison_res subtraction = S21_TRUE;
     while (shift >= 0) {
       if (subtraction) {
         partial_remainder = s21_big_decimal_binary_subtraction(dividend_tmp, shifted_divisor);

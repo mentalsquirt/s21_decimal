@@ -22,14 +22,19 @@ int s21_round(s21_decimal value, s21_decimal *result) {
     error = S21_OTHER_ERROR;
     *result = s21_decimal_get_inf();
   } else {
+    // all of the tests are passed
     *result = s21_decimal_get_zero();
     int sign = s21_decimal_get_sign(value);
     s21_decimal fraction;
     s21_decimal u_value = s21_abs(value);
     s21_decimal u_value_truncated;
     s21_truncate(u_value, &u_value_truncated);
-    // s21_sub(u_value, u_value_truncated, &fraction);
+    s21_sub(u_value, u_value_truncated, &fraction);
+    u_value_truncated = s21_bank_round(u_value_truncated, fraction);
+    *result = u_value_truncated;
+    s21_decimal_set_sign(result, sign);
   }
+  return error;
 }
 
 /*
@@ -98,6 +103,7 @@ int s21_truncate(s21_decimal value, s21_decimal *result) {
     error = S21_OTHER_ERROR;
     *result = s21_decimal_get_inf();
   } else {
+    // all of the tests are passed
     int exponent = s21_decimal_get_exponent(value);
     s21_decimal tmp = value;
     s21_decimal_clear_bit3(&tmp);

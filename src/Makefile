@@ -6,7 +6,7 @@ OS = $(shell uname)
 ifeq ($(OS), Linux)
 	CHECK_FLAGS = -lcheck -pthread -lrt -lm -lsubunit
 else
-	CHECK_FLAGS = $(shell pkg-config --libs --cflags check)
+	CHECK_FLAGS = $(shell pkg-config --libs --cflags check) -lm
 endif
 
 TEST_COMPILE = $(CC) $(CC_FLAGS) tests/*.c libs21_decimal.a $(CHECK_FLAGS) -L. -ls21_decimal
