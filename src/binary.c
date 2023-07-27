@@ -14,7 +14,7 @@
   returns 1 if set, 0 if not set
 */
 int s21_test_bit(unsigned int value, int index) {
-  return value & (1U << index);
+  return !!(value & (1U << index));
 }
 
 /*
@@ -65,7 +65,7 @@ int s21_invert_bit(unsigned int value, int index) {
 */
 int s21_decimal_get_non_zero_bit(s21_decimal decimal) {
   int res = -1;
-  for (size_t i = MAX_BITS - 1; i >= 0; --i) {
+  for (int i = MAX_BITS - 1; i >= 0; --i) {
     if (s21_decimal_test_bit(decimal, i)) {
       res = i;
       break;
@@ -120,6 +120,7 @@ s21_decimal s21_decimal_binary_shift_right_one(s21_decimal decimal) {
     int lowest = s21_test_bit(decimal.bits[i], 0);
     if (lowest) res.bits[i - 1] = s21_set_bit(res.bits[i - 1], MAX_BITS_INT - 1);
   }
+  return res;
 }
 
 /*
@@ -303,7 +304,7 @@ s21_big_decimal s21_decimal_binary_multiplication(s21_decimal value_1, s21_decim
   s21_big_decimal big_res = s21_decimal_to_big_decimal(s21_decimal_get_zero());
   s21_big_decimal big_tmp = s21_decimal_to_big_decimal(value_1);
   int max_bit = s21_decimal_get_non_zero_bit(value_2);
-  for (size_t i = 0; i <= max_bit; i++) {
+  for (int i = 0; i <= max_bit; i++) {
     if (s21_decimal_test_bit(value_2, i)) {
       big_res = s21_big_decimal_binary_addition(big_res, big_tmp);
     }
@@ -320,7 +321,7 @@ s21_big_decimal s21_big_decimal_binary_multiplication(s21_big_decimal big_value_
   s21_big_decimal big_res = s21_decimal_to_big_decimal(s21_decimal_get_zero());
   s21_big_decimal big_tmp = big_value_1;
   int max_bit = s21_decimal_get_non_zero_bit(value_2);
-  for (size_t i = 0; i <= max_bit; i++) {
+  for (int i = 0; i <= max_bit; i++) {
     if (s21_decimal_test_bit(value_2, i)) {
       big_res = s21_big_decimal_binary_addition(big_res, big_tmp);
     }
@@ -461,7 +462,7 @@ s21_big_decimal s21_big_decimal_binary_division(s21_big_decimal dividend, s21_bi
         partial_remainder = s21_big_decimal_binary_addition(dividend_tmp, shifted_divisor);
       }
       quotient = s21_big_decimal_binary_shift_left(quotient, 1);
-      if (!s21_big_decimal_test_bit(partial_remainder.decimals[1], MAX_BITS - 1)) {
+      if (!s21_decimal_test_bit(partial_remainder.decimals[1], MAX_BITS - 1)) {
         quotient.decimals[0] = s21_decimal_set_bit(quotient.decimals[0], 0);
       }
       dividend_tmp = s21_big_decimal_binary_shift_left(partial_remainder, 1);

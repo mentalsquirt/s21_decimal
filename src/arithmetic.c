@@ -13,7 +13,7 @@
 
 
 /*
-returns the absolute value of a s21_decimal number
+  returns the absolute value of a s21_decimal number
 */
 s21_decimal s21_abs(s21_decimal value) {
   s21_decimal res = value;
@@ -206,7 +206,7 @@ int s21_mul_helper(s21_decimal value_1, s21_decimal value_2, s21_decimal *result
     s21_decimal_set_exponent(&remainder.decimals[0], shift);
     res.decimals[0] = s21_bank_round(res.decimals[0], remainder.decimals[0]);
     s21_decimal_set_exponent(&res.decimals[0], exponent_res);
-    if (!s21_decimal_binary_equal_zero(res.decimals[1]) || !s21_decimal_correctness(res.decimals[0])) {
+    if (!s21_decimal_binary_is_zero(res.decimals[1]) || !s21_decimal_correctness(res.decimals[0])) {
       error = S21_ARITHMETIC_BIG;
       *result = s21_decimal_get_inf();
     } else {
@@ -257,7 +257,7 @@ int s21_big_decimal_shift_to_decimal(s21_big_decimal value) {
   levelled values are only the integral part of the decimal, hence if exponents
   differ significantly — we may get a lot of trailing zeros
 
-  we store the levelled values in the uint256 in case of overflow
+  we store the levelled values in a uint256 in case of overflow
 */
 void s21_decimal_levelling(s21_decimal value_1, s21_decimal value_2, s21_big_decimal *big_value_1, s21_big_decimal *big_value_2) {
   int exponent_1 = s21_decimal_get_exponent(value_1);
