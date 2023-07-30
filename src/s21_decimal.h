@@ -178,10 +178,4 @@ int s21_truncate(s21_decimal value, s21_decimal *result);
 int s21_negate(s21_decimal value, s21_decimal *result);
 
 
-// print funcs
-void S21_strMulBy2(char *str, char bit);
-void S21_sPrintDec09(s21_decimal value, char *str2);
-s21_decimal DEC(char *src);
-
-
 #endif  // SRC_S21_DECIMAL_H_
